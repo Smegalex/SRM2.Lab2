@@ -1,4 +1,5 @@
 from sympy import diff, pprint, Interval, Abs, solve
+from sympy.plotting import plot
 from sympy.calculus.util import maximum
 from sympy.abc import x, y
 from math import factorial
@@ -172,7 +173,8 @@ def Newton(X: list, Y: list = None, funct=None):
                 simplified_current_polynomial, {"x^1": 1, "x^0": -k})
 
         general_form += current_divided_difference * current_polynomial
-        simplified_current_polynomial = multiply_polynomials(simplified_current_polynomial, {"x^0":current_divided_difference})
+        simplified_current_polynomial = multiply_polynomials(
+            simplified_current_polynomial, {"x^0": current_divided_difference})
         returning_polynomial = add_polynomials(
             returning_polynomial, simplified_current_polynomial)
 
@@ -184,17 +186,16 @@ def find_interpolation_error(interpolation_polynomial, X: list, Xstar: float, fu
     for i in range(len(X)):
         derivative = diff(derivative, x)
 
-
     # maximumDer = maximum(Abs(derivative), x, Interval(X[0], X[-1]))
-        
 
     critical_points = solve(derivative)
-    
-    values = [Abs(derivative.subs(x, point)) for point in critical_points]
+    values = []
+    for point in critical_points:
+        if point <= X[-1] and point >= X[0]:
+            values.append(Abs(derivative.subs(x, point)))
     values += [Abs(derivative.subs(x, X[0])), Abs(derivative.subs(x, X[-1]))]
-    
-    maximumDer = max(values)
 
+    maximumDer = max(values)
 
     denominator = factorial(len(X))
     polynomial = None
@@ -219,36 +220,39 @@ if __name__ == "__main__":
     print(
         f"\nІнтерполяційні поліноми, розраховані для:\nX:{X1}\nY:{Y1}\n{''.ljust(50, '_')}")
 
-    general_lagrange, interpolation_polynomial = Lagrange(X1, Y1)
+    general_lagrange1, L1 = Lagrange(X1, Y1)
     print(
-        f"Загальна форма многочлена Лагранжа:\n{general_lagrange}\nІнтерполяційний поліном Лагранжа:\n")
-    pprint(interpolation_polynomial)
+        f"Загальна форма многочлена Лагранжа:\n{general_lagrange1}\nІнтерполяційний поліном Лагранжа:\n")
+    pprint(L1)
 
-    general_newton, interpolation_polynomial = Newton(X1, Y1)
+    general_newton1, N1 = Newton(X1, Y1)
     print(
-        f"Загальна форма многочлена Ньютона:\n{general_newton}\nІнтерполяційний поліном Ньютона:\n")
-    pprint(interpolation_polynomial)
+        f"Загальна форма многочлена Ньютона:\n{general_newton1}\nІнтерполяційний поліном Ньютона:\n")
+    pprint(N1)
 
-    max_error, actual_error = find_interpolation_error(interpolation_polynomial, X1, Xstar, funct)
+    max_error, actual_error = find_interpolation_error(L1, X1, Xstar, funct)
 
-    print(f"Інтерполяційна похибка:\n|f({Xstar})-L({Xstar})|<={max_error}\n|f({Xstar})-L({Xstar})|={actual_error}")
-
+    print(
+        f"Інтерполяційна похибка:\n|f({Xstar})-L({Xstar})|<={max_error}\n|f({Xstar})-L({Xstar})|={actual_error}")
 
     print(
         f"\n\n\nІнтерполяційні поліноми, розраховані для:\nX:{X1}\nf(x):")
     pprint(funct)
     print(f"\n{''.ljust(50, '_')}")
 
-    general_lagrange, interpolation_polynomial = Lagrange(X2, funct=funct)
+    general_lagrange2, L2 = Lagrange(X2, funct=funct)
     print(
-        f"Загальна форма многочлена Лагранжа:\n{general_lagrange}\nІнтерполяційний поліном Лагранжа:\n")
-    pprint(interpolation_polynomial)
+        f"Загальна форма многочлена Лагранжа:\n{general_lagrange2}\nІнтерполяційний поліном Лагранжа:\n")
+    pprint(L2)
 
-    general_newton, interpolation_polynomial = Newton(X2, funct=funct)
+    general_newton2, N2 = Newton(X2, funct=funct)
     print(
-        f"Загальна форма многочлена Ньютона:\n{general_newton}\nІнтерполяційний поліном Ньютона:\n")
-    pprint(interpolation_polynomial)
+        f"Загальна форма многочлена Ньютона:\n{general_newton2}\nІнтерполяційний поліном Ньютона:\n")
+    pprint(N2)
 
-    max_error, actual_error = find_interpolation_error(interpolation_polynomial, X2, Xstar, funct)
+    max_error, actual_error = find_interpolation_error(N2, X2, Xstar, funct)
 
-    print(f"Інтерполяційна похибка:\n|f({Xstar})-L({Xstar})|<={max_error}\n|f({Xstar})-L({Xstar})|={actual_error}\n\n")
+    print(
+        f"Інтерполяційна похибка:\n|f({Xstar})-L({Xstar})|<={max_error}\n|f({Xstar})-L({Xstar})|={actual_error}\n\n")
+
+    plot(funct, L1, N2, xlim=[0, 1.5], ylim=[0, 12], legend=True)
